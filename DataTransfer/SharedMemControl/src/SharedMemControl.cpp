@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <string.h>
+#include <cstring>//#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -157,24 +157,52 @@ void CGA::DATATRANSFER::CSharedMemControl::CreateWriteShm(void)
 // 
 //
 //------------------------------------------------------------------------
-void CGA::DATATRANSFER::CSharedMemControl::PutReadShm(const char* str_v)
+void CGA::DATATRANSFER::CSharedMemControl::PutReadShm(const char* InputData)
 {
-	int nSemaphoreResult = semop(m_nReadSemaphoreId, &m_strtReadSemOpen, 1);
-	if (-1 == nSemaphoreResult)
+	if (InputData == nullptr ||	m_pReadShmAddr == nullptr || m_IpcConfig.READ_SHM_SIZE <= 0)
 	{
-		cout << "[DEBUG] " << __LINE__ << " - Open semaphore result : " << nSemaphoreResult << endl;
-	}
-	else
-	{
-		char* strct_v = strncat(m_pReadShmAddr, str_v, strlen(str_v));
-		if( nullptr == strct_v ){ cout << "Error: erase!" << endl; }
-		cout << "[DEBUG] " << __LINE__ << "- PutReadShm Write IPC : " << str_v << endl;
+		return;
 	}
 
-	nSemaphoreResult = semop(m_nReadSemaphoreId, &m_strtReadSemClose, 1);
-	if (-1 == nSemaphoreResult)
+	if (m_nReadSemaphoreId < 0)
 	{
-		cout << "[DEBUG] " << __LINE__ << "- Close semaphore result : " << nSemaphoreResult << endl;
+		std::cerr << "[ERROR] Invalid read semaphore ID: " << m_nReadSemaphoreId << std::endl;
+		return;
+	}
+	
+	int SemaphoreResult;
+	do
+	{
+		SemaphoreResult = semop(m_nReadSemaphoreId,	&m_strtReadSemOpen,	1);
+	} while (SemaphoreResult == -1 && errno == EINTR);
+
+	if (SemaphoreResult == -1)
+	{
+		std::cerr << "[ERROR] Failed to lock read semaphore: "	<< std::strerror(errno)	<< std::endl;
+		return;
+	}
+
+	const std::size_t MemorySize = static_cast<std::size_t>(m_IpcConfig.READ_SHM_SIZE);
+
+	// 마지막 한 바이트는 '\0'을 위해 남긴다.
+	const std::size_t CopyLength =	std::min(std::strlen(InputData), MemorySize - 1);
+	std::memset(m_pReadShmAddr,	0, MemorySize);
+	
+	// 실제 입력 데이터 기록
+	if (CopyLength > 0)
+	{
+		std::memcpy(m_pReadShmAddr, InputData, CopyLength);
+	}	
+	m_pReadShmAddr[CopyLength] = '\0';
+	
+	do
+	{
+		SemaphoreResult = semop(m_nReadSemaphoreId,	&m_strtReadSemClose,1);
+	} while (SemaphoreResult == -1 && errno == EINTR);
+	
+	if (SemaphoreResult == -1)
+	{
+		std::cerr << "[ERROR] Failed to unlock read semaphore: " << std::strerror(errno) << std::endl;
 	}
 }
 
@@ -184,40 +212,82 @@ void CGA::DATATRANSFER::CSharedMemControl::PutReadShm(const char* str_v)
 //	
 //
 //------------------------------------------------------------------------
-int CGA::DATATRANSFER::CSharedMemControl::GetWriteShm(char* str_v)
+int CGA::DATATRANSFER::CSharedMemControl::GetWriteShm(char* OutBuffer,	std::size_t OutBufferSize)
 {
-	int nSemaphoreResult = semop(m_nWriteSemaphoreId, &m_strtWriteSemOpen, 1);
-	if (-1 == nSemaphoreResult)
+	if (OutBuffer == nullptr || OutBufferSize == 0)
 	{
-		cout << "[DEBUG] " << __LINE__ << "- Open semaphore result : " << nSemaphoreResult << endl;
-	}
-	else
-	{
-		char *ret_pnt = strncpy(str_v, m_pWriteShmAddr, strlen(m_pWriteShmAddr));
-		if( nullptr == ret_pnt ){cout << "Error: strncpy !" << endl;}
-		void* ret_m = memset(m_pWriteShmAddr, 0, m_IpcConfig.WRITE_SHM_SIZE);
-		if( nullptr == ret_m ){ cout << "Error: memset!" << endl; }
+		std::cerr << "[ERROR] Invalid output buffer" << std::endl;
+		return -1;
 	}
 
-	nSemaphoreResult = semop(m_nWriteSemaphoreId, &m_strtWriteSemClose, 1);
-	if (-1 == nSemaphoreResult)
-	{	
-		cout << "[DEBUG] " << __LINE__ << "- Close semaphore result : " << nSemaphoreResult << endl;
-	}
+	// 실패하거나 데이터가 없을 경우에도 안전하게 빈 문자열로 유지한다.
+	OutBuffer[0] = '\0';
 
-	int nStringLength = 0;
-
-	if( nullptr != str_v)
+	if (m_pWriteShmAddr == nullptr)
 	{
-		size_t len_v = strlen(str_v);
-		nStringLength = static_cast<int>(len_v);
-	}
-	else
-	{
-		nStringLength = 0;
+		std::cerr << "[ERROR] Write shared memory is not attached" << std::endl;
+		return -1;
 	}
 
-	return nStringLength;
+	if (m_IpcConfig.WRITE_SHM_SIZE <= 0)
+	{
+		std::cerr << "[ERROR] Invalid WRITE_SHM_SIZE: " << m_IpcConfig.WRITE_SHM_SIZE << std::endl;
+		return -1;
+	}
+
+	if (m_nWriteSemaphoreId < 0)
+	{
+		std::cerr << "[ERROR] Invalid write semaphore ID" << std::endl;
+		return -1;
+	}
+
+	// 공유 메모리 접근 잠금
+	int SemaphoreResult;
+	do
+	{
+		SemaphoreResult = semop(m_nWriteSemaphoreId, &m_strtWriteSemOpen, 1);
+	} while (SemaphoreResult == -1 && errno == EINTR);
+
+	if (SemaphoreResult == -1)
+	{
+		std::cerr << "[ERROR] Failed to lock write semaphore: "	<< std::strerror(errno)	<< std::endl;
+		return -1;
+	}
+
+	const std::size_t SharedMemorySize = static_cast<std::size_t>(m_IpcConfig.WRITE_SHM_SIZE);
+
+	// 공유 메모리 범위 내에서 문자열 길이 검색
+	// 공유 메모리에 '\0'이 없더라도 범위를 넘지 않는다.
+	std::size_t DataLength = 0;
+	while (DataLength < SharedMemorySize &&	m_pWriteShmAddr[DataLength] != '\0')
+	{
+		++DataLength;
+	}
+
+	// 출력 버퍼 마지막 한 바이트는 '\0'을 위해 남긴다.
+	const std::size_t CopyLength = std::min(DataLength,	OutBufferSize - 1);
+	if (CopyLength > 0)
+	{
+		std::memcpy(OutBuffer, m_pWriteShmAddr, CopyLength);
+	}
+	// 반드시 널 종료 문자열로 만든다.
+	OutBuffer[CopyLength] = '\0';
+
+	// 읽은 데이터 제거
+	std::memset(m_pWriteShmAddr, 0,	SharedMemorySize);
+
+	// 공유 메모리 접근 잠금 해제
+	do
+	{
+		SemaphoreResult = semop(m_nWriteSemaphoreId, &m_strtWriteSemClose, 1);
+	} while (SemaphoreResult == -1 && errno == EINTR);
+
+	if (SemaphoreResult == -1)
+	{
+		std::cerr << "[ERROR] Failed to unlock write semaphore: " << std::strerror(errno) << std::endl;
+		return -1;
+	}
+	return static_cast<int>(CopyLength);
 }
 
 

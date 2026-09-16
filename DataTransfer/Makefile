@@ -12,22 +12,37 @@ AR  := ar
 OBJ_DIR := Object
 BIN_DIR := Bin
 
+TRSFMODEL_DIR  := DataTrsfModel
 NETWORK_DIR  := NetworkManager
 COMMON_DIR  := Common
 MEMCONTROL_DIR  := SharedMemControl
+OPEN_DIS_DIR     := ThirdParty/OpenDIS
+OPEN_DIS_INC_DIR := $(OPEN_DIS_DIR)/include
+OPEN_DIS_LIB_DIR := $(OPEN_DIS_DIR)/lib
 
-CXXFLAGS := -std=c++17 -Wall -Wextra -O2 -pthread
-LDLIBS   := -pthread
+CPPFLAGS := $(INCLUDES)
+CXXFLAGS := -std=c++17 -Wall -Wextra -g -O2 -pthread
+
+LDFLAGS := \
+	-L$(OPEN_DIS_LIB_DIR) \
+	-Wl,-rpath,'$$ORIGIN/../ThirdParty/OpenDIS/lib'
+
+LDLIBS := \
+	-lOpenDIS7 \
+	-pthread
 
 INCLUDES := \
+	-I$(TRSFMODEL_DIR)/inc \
 	-I$(NETWORK_DIR)/inc \
 	-I$(COMMON_DIR)/inc \
-	-I$(MEMCONTROL_DIR)/inc
+	-I$(MEMCONTROL_DIR)/inc \
+	-I$(OPEN_DIS_INC_DIR)
 
 # ============================================================
 # Source Files
 # ============================================================
 
+TRSFMODEL_SRCS  := $(wildcard $(TRSFMODEL_DIR)/src/*.cpp)
 NETWORK_SRCS  := $(wildcard $(NETWORK_DIR)/src/*.cpp)
 COMMON_SRCS  := $(wildcard $(COMMON_DIR)/src/*.cpp)
 MEMCONTROL_SRCS  := $(wildcard $(MEMCONTROL_DIR)/src/*.cpp)
@@ -35,6 +50,9 @@ MEMCONTROL_SRCS  := $(wildcard $(MEMCONTROL_DIR)/src/*.cpp)
 # ============================================================
 # Object Files
 # ============================================================
+
+TRSFMODEL_OBJS := \
+	$(patsubst $(TRSFMODEL_DIR)/src/%.cpp,$(OBJ_DIR)/$(TRSFMODEL_DIR)/%.o,$(TRSFMODEL_SRCS))
 
 NETWORK_OBJS := \
 	$(patsubst $(NETWORK_DIR)/src/%.cpp,$(OBJ_DIR)/$(NETWORK_DIR)/%.o,$(NETWORK_SRCS))
@@ -52,11 +70,13 @@ MAIN_OBJ := $(OBJ_DIR)/main.o
 # Static Libraries
 # ============================================================
 
+TRSFMODEL_LIB := $(OBJ_DIR)/libDataTrsfModel.a
 NETWORK_LIB := $(OBJ_DIR)/libNetworkManager.a
 COMMON_LIB := $(OBJ_DIR)/libCommon.a
 MEMCONTROL_LIB := $(OBJ_DIR)/libSharedMemControl.a
 
 LIBS := \
+	$(TRSFMODEL_LIB) \
 	$(NETWORK_LIB) \
 	$(COMMON_LIB) \
 	$(MEMCONTROL_LIB)
@@ -85,6 +105,9 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
+$(OBJ_DIR)/$(TRSFMODEL_DIR):
+	mkdir -p $@
+
 $(OBJ_DIR)/$(NETWORK_DIR):
 	mkdir -p $@
 	
@@ -93,6 +116,13 @@ $(OBJ_DIR)/$(COMMON_DIR):
 	
 $(OBJ_DIR)/$(MEMCONTROL_DIR):
 	mkdir -p $@
+
+# ============================================================
+# Compile DataTrsfModel
+# ============================================================
+
+$(OBJ_DIR)/$(TRSFMODEL_DIR)/%.o: $(TRSFMODEL_DIR)/src/%.cpp | $(OBJ_DIR)/$(TRSFMODEL_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # ============================================================
 # Compile NetworkManager
@@ -126,6 +156,9 @@ $(MAIN_OBJ): main.cpp | $(OBJ_DIR)
 # Static Libraries
 # ============================================================
 
+$(TRSFMODEL_LIB): $(TRSFMODEL_OBJS)
+	$(AR) rcs $@ $^
+
 $(NETWORK_LIB): $(NETWORK_OBJS)
 	$(AR) rcs $@ $^
 
@@ -144,6 +177,7 @@ $(TARGET): $(MAIN_OBJ) $(LIBS) | $(BIN_DIR)
 		-Wl,--start-group \
 		$(LIBS) \
 		-Wl,--end-group \
+		$(LDFLAGS) \
 		$(LDLIBS) \
 		-o $@
 

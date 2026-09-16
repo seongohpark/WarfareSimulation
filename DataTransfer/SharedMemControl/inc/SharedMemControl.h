@@ -1,17 +1,6 @@
 #pragma once
 
 #include <sys/sem.h>
-//#include "CTypeDef.h"
-
-using std::string;
-using std::ofstream;
-using std::ifstream;
-using std::cout;
-using std::endl;
-using std::stringstream;
-using std::to_string;
-using std::stoi;
-using std::ios;
 
 namespace CGA
 {
@@ -65,10 +54,10 @@ namespace CGA
 			void DeleteReadShm(void);			// Check OK // 읽기용 메모리 삭제
 			void DeleteWriteShm(void);			// Check OK // 쓰기용 메모리 삭제
 
-			int GetReadShm(char* str);			// Check OK
-			void PutReadShm(const char* str);	//
-			int GetWriteShm(char* str);			// Check OK
-			void PutWriteShm(const char* str);	// Check OK
+			int GetReadShm(char* str);
+			void PutReadShm(const char* InputData);
+			int GetWriteShm(char* OutBuffer, std::size_t OutBufferSize);
+			void PutWriteShm(const char* str);
 		};
 	}
 }

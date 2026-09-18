@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-
-class SharedMemControl;
+#include "SharedMemControl.h"
+#include "NetworkManager.h"
 
 class DataTrsfModel 
 {
@@ -11,13 +11,15 @@ public:
 
 	void Start();
 
+	void StartIPC(void);
+
 	friend std::unique_ptr<DataTrsfModel> std::make_unique<DataTrsfModel>();
 	friend std::unique_ptr<DataTrsfModel>::deleter_type;
 
 private:
 	static std::unique_ptr<DataTrsfModel> pDataTrsfModel;
-
-	SharedMemControl* IPCControl;
+	std::unique_ptr<CSharedMemControl> pSharedMemControl;
+	std::unique_ptr<NetworkManager> pNetworkManager;
 
 private:
 	explicit DataTrsfModel();

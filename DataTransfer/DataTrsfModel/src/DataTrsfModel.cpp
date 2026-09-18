@@ -1,9 +1,9 @@
 #include "DataTrsfModel.h"
-#include "SharedMemControl.h"
 
 std::unique_ptr<DataTrsfModel> DataTrsfModel::pDataTrsfModel = nullptr;
 
 DataTrsfModel::DataTrsfModel()
+	: pSharedMemControl(nullptr)
 {
 }
 
@@ -14,8 +14,7 @@ DataTrsfModel::~DataTrsfModel()
 DataTrsfModel* DataTrsfModel::GetInstance()
 {
 	if (nullptr == pDataTrsfModel)
-	{
-		//pDataTrsfModel.reset(new DataTrsfModel());
+	{	
 		pDataTrsfModel = std::make_unique<DataTrsfModel>();
 	}
 
@@ -23,6 +22,13 @@ DataTrsfModel* DataTrsfModel::GetInstance()
 }
 
 void DataTrsfModel::Start()
+{
+	//pSharedMemControl = std::make_unique<CSharedMemControl>();
+	pNetworkManager = std::make_unique<NetworkManager>();
+	pNetworkManager->StartMasterServer();
+}
+
+void DataTrsfModel::StartIPC(void)
 {
 
 }

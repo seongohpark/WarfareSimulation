@@ -18,7 +18,7 @@ using std::to_string;
 using std::stoi;
 using std::ios;
 
-CGA::DATATRANSFER::CSharedMemControl::CSharedMemControl()
+CSharedMemControl::CSharedMemControl()
 	: m_IpcConfig{-1, -1 ,-1, -1, -1, -1}
 	, m_semUnion{ -1 }
 	, m_nReadShmID(-1)
@@ -35,7 +35,7 @@ CGA::DATATRANSFER::CSharedMemControl::CSharedMemControl()
 
 }
 
-CGA::DATATRANSFER::CSharedMemControl::~CSharedMemControl()
+CSharedMemControl::~CSharedMemControl()
 {	
 }
 
@@ -45,7 +45,7 @@ CGA::DATATRANSFER::CSharedMemControl::~CSharedMemControl()
 //	
 //
 //------------------------------------------------------------------------
-void CGA::DATATRANSFER::CSharedMemControl::InitializeShm(void)
+void CSharedMemControl::InitializeShm(void)
 {
 	string strConfigPath;
 	strConfigPath.assign("../../cfg/ipc.cfg");
@@ -92,7 +92,7 @@ void CGA::DATATRANSFER::CSharedMemControl::InitializeShm(void)
 //	
 //
 //------------------------------------------------------------------------
-void CGA::DATATRANSFER::CSharedMemControl::CreateReadShm(void)
+void CSharedMemControl::CreateReadShm(void)
 {
 	// shmget : key값을 통해 Shared Memory의 id를 얻어온다.
 	m_nReadShmID = shmget(static_cast<key_t>(m_IpcConfig.READ_SHM_KEY), m_IpcConfig.READ_SHM_SIZE, IPC_CREAT | 0666U);
@@ -123,7 +123,7 @@ void CGA::DATATRANSFER::CSharedMemControl::CreateReadShm(void)
 //	
 //
 //------------------------------------------------------------------------
-void CGA::DATATRANSFER::CSharedMemControl::CreateWriteShm(void)
+void CSharedMemControl::CreateWriteShm(void)
 {
 	// shmget : key값을 통해 Shared Memory의 id를 얻어온다.
 	m_nWriteShmID = shmget(static_cast<key_t>(m_IpcConfig.WRITE_SHM_KEY), m_IpcConfig.WRITE_SHM_SIZE, IPC_CREAT | 0666U);
@@ -148,16 +148,13 @@ void CGA::DATATRANSFER::CSharedMemControl::CreateWriteShm(void)
 	}
 }
 
-
-
-
 //------------------------------------------------------------------------
 // PutReadShm
 // ReadShm에 쓰고 WriteShm에서 읽는다.
 // 
 //
 //------------------------------------------------------------------------
-void CGA::DATATRANSFER::CSharedMemControl::PutReadShm(const char* InputData)
+void CSharedMemControl::PutReadShm(const char* InputData)
 {
 	if (InputData == nullptr ||	m_pReadShmAddr == nullptr || m_IpcConfig.READ_SHM_SIZE <= 0)
 	{
@@ -212,7 +209,7 @@ void CGA::DATATRANSFER::CSharedMemControl::PutReadShm(const char* InputData)
 //	
 //
 //------------------------------------------------------------------------
-int CGA::DATATRANSFER::CSharedMemControl::GetWriteShm(char* OutBuffer,	std::size_t OutBufferSize)
+int CSharedMemControl::GetWriteShm(char* OutBuffer,	std::size_t OutBufferSize)
 {
 	if (OutBuffer == nullptr || OutBufferSize == 0)
 	{
@@ -289,6 +286,3 @@ int CGA::DATATRANSFER::CSharedMemControl::GetWriteShm(char* OutBuffer,	std::size
 	}
 	return static_cast<int>(CopyLength);
 }
-
-
-

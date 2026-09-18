@@ -21,7 +21,7 @@ OPEN_DIS_INC_DIR := $(OPEN_DIS_DIR)/include
 OPEN_DIS_LIB_DIR := $(OPEN_DIS_DIR)/lib
 
 CPPFLAGS := $(INCLUDES)
-CXXFLAGS := -std=c++17 -Wall -Wextra -g -O2 -pthread
+CXXFLAGS := -std=c++17 -Wall -Wextra -g3 -O0 -pthread
 
 LDFLAGS := \
 	-L$(OPEN_DIS_LIB_DIR) \

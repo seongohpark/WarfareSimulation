@@ -9,7 +9,7 @@ class DataTrsfModel
 public:
 	static DataTrsfModel* GetInstance();	
 
-	void Start();
+	void Start(const int nStartMode);
 
 	void StartIPC(void);
 

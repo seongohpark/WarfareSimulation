@@ -21,11 +21,26 @@ DataTrsfModel* DataTrsfModel::GetInstance()
 	return pDataTrsfModel.get();
 }
 
-void DataTrsfModel::Start()
+void DataTrsfModel::Start(const int nStartMode)
 {
-	//pSharedMemControl = std::make_unique<CSharedMemControl>();
-	pNetworkManager = std::make_unique<NetworkManager>();
-	pNetworkManager->StartMasterServer();
+	switch (nStartMode)
+	{
+	case 0:
+		{
+			pSharedMemControl = std::make_unique<CSharedMemControl>();
+			pSharedMemControl->InitializeShm();
+			
+			pNetworkManager = std::make_unique<NetworkManager>();
+			pNetworkManager->StartMasterServer();
+		}
+		break;
+
+	case 1:
+		break;
+
+	default:
+		break;
+	}
 }
 
 void DataTrsfModel::StartIPC(void)

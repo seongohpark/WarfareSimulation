@@ -1,10 +1,13 @@
 #include <iostream>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <cstring>//#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <filesystem>
+#include <limits.h>
+
 #include "SharedMemControl.h"
 #include "CommonUtil.h"
 
@@ -47,36 +50,46 @@ CSharedMemControl::~CSharedMemControl()
 //------------------------------------------------------------------------
 void CSharedMemControl::InitializeShm(void)
 {
-	string strConfigPath;
-	strConfigPath.assign("../../cfg/ipc.cfg");
+	char szExePath[PATH_MAX];
+	ssize_t nLength = readlink("/proc/self/exe", szExePath,	sizeof(szExePath) - 1);
+	if (nLength == -1)
+	{
+		return ;
+	}
+	
+	szExePath[nLength] = '\0';
+	std::filesystem::path ExePath(szExePath);
+	std::filesystem::path ExeDir = ExePath.parent_path();
+	std::filesystem::path ConfigPath = ExeDir / ".." / "Resource" / "ipc.cfg";
 
-	string strKeyName = "SIM_TO_NET_SHM_KEY";
-	string strSectionName = "SHARED_MEMORY_INFO";
-	const string strWriteShmKey = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	std::string strConfigPath = std::filesystem::weakly_canonical(ConfigPath).string();
+
+	std::string strKeyName = "SIM_TO_NET_SHM_KEY";
+	std::string strSectionName = "SHARED_MEMORY_INFO";
+	const string strWriteShmKey = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
 	strKeyName = "NET_TO_SIM_SHM_KEY";
-	const string strReadShmKey = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	const string strReadShmKey = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
 	strKeyName = "SIM_TO_NET_SHM_SIZE";
-	const string strReadShmSize = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	const string strReadShmSize = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
 	strKeyName = "NET_TO_SIM_SHM_SIZE";
-	const string strWriteShmSize = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	const string strWriteShmSize = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
 	strKeyName = "SIM_TO_NET_SEM_KEY";
-	string strWriteSemKey = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	string strWriteSemKey = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
 	strKeyName = "NET_TO_SIM_SEM_KEY";
-	const string strReadSemKey = CCommonUtility::GetValue(strKeyName, strSectionName, strConfigPath);
+	const string strReadSemKey = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 
-	m_IpcConfig.READ_SHM_KEY = stoi(strReadShmKey, nullptr);
-	m_IpcConfig.WRITE_SHM_KEY = stoi(strWriteShmKey, nullptr);
-	m_IpcConfig.READ_SHM_SIZE = stoi(strReadShmSize, nullptr);
-	m_IpcConfig.WRITE_SHM_SIZE = stoi(strWriteShmSize, nullptr);
-	m_IpcConfig.READ_SEMAPHORE_KEY = stoi(strReadSemKey, nullptr);
-	m_IpcConfig.WRITE_SEMAPHORE_KEY = stoi(strWriteSemKey, nullptr);
+	m_IpcConfig.READ_SHM_KEY = std::stoi(strReadShmKey, nullptr);
+	m_IpcConfig.WRITE_SHM_KEY = std::stoi(strWriteShmKey, nullptr);
+	m_IpcConfig.READ_SHM_SIZE = std::stoi(strReadShmSize, nullptr);
+	m_IpcConfig.WRITE_SHM_SIZE = std::stoi(strWriteShmSize, nullptr);
+	m_IpcConfig.READ_SEMAPHORE_KEY = std::stoi(strReadSemKey, nullptr);
+	m_IpcConfig.WRITE_SEMAPHORE_KEY = std::stoi(strWriteSemKey, nullptr);
 
-	cout << "[INFO] " << __LINE__ << " - Config Path : " << strConfigPath << endl;
 	cout << "[INFO] " << __LINE__ << " - SIM_TO_NET_SHM_KEY : " << m_IpcConfig.READ_SHM_KEY << endl;
 	cout << "[INFO] " << __LINE__ << " - SIM_TO_NET_SHM_SIZE : " << m_IpcConfig.READ_SHM_SIZE << endl;
 	cout << "[INFO] " << __LINE__ << " - SIM_TO_NET_SEM_KEY : " << m_IpcConfig.READ_SEMAPHORE_KEY << endl;

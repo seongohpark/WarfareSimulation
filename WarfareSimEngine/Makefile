@@ -20,8 +20,9 @@ EVENT_DIR    := EventManager
 MOVEMENT_DIR := MovementSystem
 TIME_DIR     := TimeManager
 NETWORK_DIR  := NetworkManager
+COMMON_DIR := Common
 
-CXXFLAGS := -std=c++17 -Wall -Wextra -O2 -pthread
+CXXFLAGS := -std=c++17 -Wall -Wextra -g3 -O0 -pthread
 LDLIBS   := -pthread
 
 INCLUDES := \
@@ -32,7 +33,8 @@ INCLUDES := \
 	-I$(EVENT_DIR)/inc \
 	-I$(MOVEMENT_DIR)/inc \
 	-I$(TIME_DIR)/inc \
-	-I$(NETWORK_DIR)/inc
+	-I$(NETWORK_DIR)/inc \
+	-I$(COMMON_DIR)/inc
 
 # ============================================================
 # Source Files
@@ -46,6 +48,7 @@ EVENT_SRCS   := $(wildcard $(EVENT_DIR)/src/*.cpp)
 MOVEMENT_SRCS := $(wildcard $(MOVEMENT_DIR)/src/*.cpp)
 TIME_SRCS     := $(wildcard $(TIME_DIR)/src/*.cpp)
 NETWORK_SRCS  := $(wildcard $(NETWORK_DIR)/src/*.cpp)
+COMMON_SRCS  := $(wildcard $(COMMON_DIR)/src/*.cpp)
 
 # ============================================================
 # Object Files
@@ -75,6 +78,9 @@ TIME_OBJS := \
 NETWORK_OBJS := \
 	$(patsubst $(NETWORK_DIR)/src/%.cpp,$(OBJ_DIR)/$(NETWORK_DIR)/%.o,$(NETWORK_SRCS))
 
+COMMON_OBJS := \
+	$(patsubst $(COMMON_DIR)/src/%.cpp,$(OBJ_DIR)/$(COMMON_DIR)/%.o,$(COMMON_SRCS))
+
 # main.cpp
 MAIN_OBJ := $(OBJ_DIR)/main.o
 
@@ -90,6 +96,7 @@ EVENT_LIB    := $(OBJ_DIR)/libEventManager.a
 MOVEMENT_LIB := $(OBJ_DIR)/libMovementSystem.a
 TIME_LIB := $(OBJ_DIR)/libTimeManager.a
 NETWORK_LIB := $(OBJ_DIR)/libNetworkManager.a
+COMMON_LIB := $(OBJ_DIR)/libCommon.a
 
 LIBS := \
 	$(ENGINE_LIB) \
@@ -99,7 +106,8 @@ LIBS := \
 	$(EVENT_LIB) \
 	$(MOVEMENT_LIB) \
 	$(TIME_LIB) \
-	$(NETWORK_LIB)
+	$(NETWORK_LIB) \
+	$(COMMON_LIB)
 
 # ============================================================
 # Target
@@ -149,11 +157,14 @@ $(OBJ_DIR)/$(TIME_DIR):
 $(OBJ_DIR)/$(NETWORK_DIR):
 	mkdir -p $@
 
+$(OBJ_DIR)/$(COMMON_DIR):
+	mkdir -p $@
+
 # ============================================================
 # Compile WarfareSimEngine
 # ============================================================
 
-$(OBJ_DIR)/$(MEMCONTROL_DIR)/%.o: $(MEMCONTROL_DIR)/src/%.cpp | $(OBJ_DIR)/$(MEMCONTROL_DIR)
+$(OBJ_DIR)/$(ENGINE_DIR)/%.o: $(ENGINE_DIR)/src/%.cpp | $(OBJ_DIR)/$(ENGINE_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # ============================================================
@@ -206,6 +217,13 @@ $(OBJ_DIR)/$(NETWORK_DIR)/%.o: $(NETWORK_DIR)/src/%.cpp | $(OBJ_DIR)/$(NETWORK_D
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # ============================================================
+# Compile Common
+# ============================================================
+
+$(OBJ_DIR)/$(COMMON_DIR)/%.o: $(COMMON_DIR)/src/%.cpp | $(OBJ_DIR)/$(COMMON_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# ============================================================
 # Compile main.cpp
 # ============================================================
 
@@ -238,6 +256,9 @@ $(TIME_LIB): $(TIME_OBJS)
 	$(AR) rcs $@ $^
 
 $(NETWORK_LIB): $(NETWORK_OBJS)
+	$(AR) rcs $@ $^
+
+$(COMMON_LIB): $(COMMON_OBJS)
 	$(AR) rcs $@ $^
 
 # ============================================================

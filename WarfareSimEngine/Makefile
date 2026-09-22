@@ -12,6 +12,8 @@ AR  := ar
 OBJ_DIR := Object
 BIN_DIR := Bin
 
+ENGINE_DIR  := WarfareSimEngine
+MEMCONTROL_DIR  := SharedMemControl
 SPATIAL_DIR  := SpatialDataManager
 ENTITY_DIR   := EntityManager
 EVENT_DIR    := EventManager
@@ -23,6 +25,8 @@ CXXFLAGS := -std=c++17 -Wall -Wextra -O2 -pthread
 LDLIBS   := -pthread
 
 INCLUDES := \
+	-I$(ENGINE_DIR)/inc \
+	-I$(MEMCONTROL_DIR)/inc \
 	-I$(SPATIAL_DIR)/inc \
 	-I$(ENTITY_DIR)/inc \
 	-I$(EVENT_DIR)/inc \
@@ -34,6 +38,8 @@ INCLUDES := \
 # Source Files
 # ============================================================
 
+ENGINE_SRCS := $(wildcard $(ENGINE_DIR)/src/*.cpp)
+MEMCONTROL_SRCS := $(wildcard $(MEMCONTROL_DIR)/src/*.cpp)
 SPATIAL_SRCS := $(wildcard $(SPATIAL_DIR)/src/*.cpp)
 ENTITY_SRCS  := $(wildcard $(ENTITY_DIR)/src/*.cpp)
 EVENT_SRCS   := $(wildcard $(EVENT_DIR)/src/*.cpp)
@@ -44,6 +50,12 @@ NETWORK_SRCS  := $(wildcard $(NETWORK_DIR)/src/*.cpp)
 # ============================================================
 # Object Files
 # ============================================================
+
+ENGINE_OBJS := \
+	$(patsubst $(ENGINE_DIR)/src/%.cpp,$(OBJ_DIR)/$(ENGINE_DIR)/%.o,$(ENGINE_SRCS))
+
+MEMCONTROL_OBJS := \
+	$(patsubst $(MEMCONTROL_DIR)/src/%.cpp,$(OBJ_DIR)/$(MEMCONTROL_DIR)/%.o,$(MEMCONTROL_SRCS))
 
 SPATIAL_OBJS := \
 	$(patsubst $(SPATIAL_DIR)/src/%.cpp,$(OBJ_DIR)/$(SPATIAL_DIR)/%.o,$(SPATIAL_SRCS))
@@ -70,6 +82,8 @@ MAIN_OBJ := $(OBJ_DIR)/main.o
 # Static Libraries
 # ============================================================
 
+ENGINE_LIB  := $(OBJ_DIR)/libWarfareSimEngine.a
+MEMCONTROL_LIB  := $(OBJ_DIR)/libSharedMemControl.a
 SPATIAL_LIB  := $(OBJ_DIR)/libSpatialDataManager.a
 ENTITY_LIB   := $(OBJ_DIR)/libEntityManager.a
 EVENT_LIB    := $(OBJ_DIR)/libEventManager.a
@@ -78,6 +92,8 @@ TIME_LIB := $(OBJ_DIR)/libTimeManager.a
 NETWORK_LIB := $(OBJ_DIR)/libNetworkManager.a
 
 LIBS := \
+	$(ENGINE_LIB) \
+	$(MEMCONTROL_LIB) \
 	$(SPATIAL_LIB) \
 	$(ENTITY_LIB) \
 	$(EVENT_LIB) \
@@ -109,6 +125,12 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
+$(OBJ_DIR)/$(ENGINE_DIR):
+	mkdir -p $@
+
+$(OBJ_DIR)/$(MEMCONTROL_DIR):
+	mkdir -p $@
+
 $(OBJ_DIR)/$(SPATIAL_DIR):
 	mkdir -p $@
 
@@ -126,6 +148,20 @@ $(OBJ_DIR)/$(TIME_DIR):
 
 $(OBJ_DIR)/$(NETWORK_DIR):
 	mkdir -p $@
+
+# ============================================================
+# Compile WarfareSimEngine
+# ============================================================
+
+$(OBJ_DIR)/$(MEMCONTROL_DIR)/%.o: $(MEMCONTROL_DIR)/src/%.cpp | $(OBJ_DIR)/$(MEMCONTROL_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# ============================================================
+# Compile SharedMemControl
+# ============================================================
+
+$(OBJ_DIR)/$(MEMCONTROL_DIR)/%.o: $(MEMCONTROL_DIR)/src/%.cpp | $(OBJ_DIR)/$(MEMCONTROL_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # ============================================================
 # Compile SpatialDataManager
@@ -179,6 +215,12 @@ $(MAIN_OBJ): main.cpp | $(OBJ_DIR)
 # ============================================================
 # Static Libraries
 # ============================================================
+
+$(ENGINE_LIB): $(ENGINE_OBJS)
+	$(AR) rcs $@ $^
+
+$(MEMCONTROL_LIB): $(MEMCONTROL_OBJS)
+	$(AR) rcs $@ $^
 
 $(SPATIAL_LIB): $(SPATIAL_OBJS)
 	$(AR) rcs $@ $^

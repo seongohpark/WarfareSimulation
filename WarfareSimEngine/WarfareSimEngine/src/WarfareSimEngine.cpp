@@ -24,5 +24,7 @@ WarfareSimEngine* WarfareSimEngine::GetInstance()
 void WarfareSimEngine::Start()
 {
 	pSharedMemControl = std::make_unique<SharedMemControl>();
+
 	pSharedMemControl->StartSharedMemProcess();
+	pSharedMemControl->Wait();
 }

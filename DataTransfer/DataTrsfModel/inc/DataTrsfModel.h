@@ -18,7 +18,7 @@ public:
 
 private:
 	static std::unique_ptr<DataTrsfModel> pDataTrsfModel;
-	std::unique_ptr<CSharedMemControl> pSharedMemControl;
+	std::unique_ptr<SharedMemControl> pSharedMemControl;
 	std::unique_ptr<NetworkManager> pNetworkManager;
 
 private:

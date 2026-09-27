@@ -27,8 +27,8 @@ void DataTrsfModel::Start(const int nStartMode)
 	{
 	case 0:
 		{
-			pSharedMemControl = std::make_unique<CSharedMemControl>();
-			pSharedMemControl->InitializeShm();
+			pSharedMemControl = std::make_unique<SharedMemControl>();
+			pSharedMemControl->StartSharedMemProcess();
 			
 			pNetworkManager = std::make_unique<NetworkManager>();
 			pNetworkManager->StartMasterServer();

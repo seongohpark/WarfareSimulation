@@ -1,0 +1,15 @@
+﻿<Window x:Class="GameMasterSystem.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameMasterSystem"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Button x:Name ="GameStartButton" Content="Game Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width =" 100" Height ="20"  Margin="0,20,10,0" Click="GameStartButton_Click"/>
+        <Button x:Name ="GameEndButton" Content="Game End" HorizontalAlignment="Right" VerticalAlignment="Top" Width =" 100" Height ="20"  Margin="0,50,10,0" Click="GameEndButton_Click"/>
+        <Label x:Name ="SimTimeLabel" Content="Simulation Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,20,0,0"/>
+        <Label x:Name ="SysTimeLabel" Content="System Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,50,0,0"/>
+    </Grid>
+</Window>

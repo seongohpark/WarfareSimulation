@@ -11,5 +11,6 @@
         <Button x:Name ="GameEndButton" Content="Game End" HorizontalAlignment="Right" VerticalAlignment="Top" Width =" 100" Height ="20"  Margin="0,50,10,0" Click="GameEndButton_Click"/>
         <Label x:Name ="SimTimeLabel" Content="Simulation Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,20,0,0"/>
         <Label x:Name ="SysTimeLabel" Content="System Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,50,0,0"/>
+        <Button x:Name ="ConnectServerButton" Content="연결" HorizontalAlignment="Left" Margin="10,404,0,0" VerticalAlignment="Top" Width="100" Click="ConnectServerButton_Click"/>
     </Grid>
 </Window>

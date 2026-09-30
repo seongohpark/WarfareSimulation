@@ -2,9 +2,16 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+<ItemGroup>
+  <Reference Include="OpenDIS7">
+    <HintPath>ThirdParty\OpenDIS\OpenDIS7.dll</HintPath>
+    <Private>true</Private>
+  </Reference>
+</ItemGroup>
 
 </Project>

@@ -21,9 +21,12 @@ namespace GameMasterSystem
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly NetworkManager networkManager;
+
         public MainWindow()
         {
             InitializeComponent();
+            networkManager = new NetworkManager();
         }
 
         public void GameStartButton_Click(object sender, RoutedEventArgs e)
@@ -34,6 +37,14 @@ namespace GameMasterSystem
         public void GameEndButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Game End Button Click");
+        }
+
+        private async void ConnectServerButton_Click(object sender, RoutedEventArgs e)
+        {
+            const string serverIp = "127.0.0.1";
+            const int serverPort = 3001;
+
+            await networkManager.ConnectAsync(serverIp, serverPort);
         }
     }    
 }

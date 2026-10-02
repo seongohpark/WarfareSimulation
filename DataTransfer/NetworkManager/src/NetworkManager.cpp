@@ -9,8 +9,9 @@
 
 #include "NetworkManager.h"
 #include "CommonUtil.h"
+#include "IGameControlListener.h"
 
-void* StartDataTrsfMasterRecvProcess(void* arg);
+//void* StartDataTrsfMasterRecvProcess(void* arg);
 
 NetworkManager::NetworkManager()
 	: ServerSocket(-1)
@@ -22,8 +23,10 @@ NetworkManager::~NetworkManager()
 {   
 }
 
-void NetworkManager::StartMasterServer()
+void NetworkManager::StartMasterServer(IGameControlListener* pListener)
 {
+	pGameControlListener = pListener;
+
 	ServerSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 	struct sockaddr_in strtServerAddr;
@@ -57,7 +60,7 @@ void NetworkManager::StartMasterServer()
 	std::string strMaxBackLog = CCommonUtility::GetValue(strConfigPath, strSectionName, strKeyName);
 	int nMaxBackLog = std::stoi(strMaxBackLog);
 
-	listen(ServerSocket, nMaxBackLog);	//int nListenResult = 
+	listen(ServerSocket, nMaxBackLog);
 
 	struct sockaddr_in strtExternalAddr;
 	int nSlaveSocket = 0;
@@ -84,28 +87,27 @@ void NetworkManager::StartMasterServer()
 			inet_ntop(AF_INET, &(ipv4->sin_addr), szIpAddress, INET_ADDRSTRLEN);
 			std::string strIpAddress(szIpAddress);
 			std::cout << "[DEBUG] connect : " << strIpAddress << std::endl;
-
-			int* pSlaveSocket = new int(nSlaveSocket);
 			
+			auto* context = new MasterRecvContext{nSlaveSocket,	pGameControlListener};
+
 			pthread_t threadId = 0;
-			const int ret = pthread_create(&threadId, nullptr, StartDataTrsfMasterRecvProcess, pSlaveSocket);
+			const int ret = pthread_create(&threadId, nullptr, this->StartDataTrsfMasterRecvProcess, context);
 			if (ret != 0)
 			{
-				std::cerr << "[ERROR] pthread_create() failed: " << std::strerror(ret) << std::endl;
-
-				delete pSlaveSocket;
+				std::cerr << "[ERROR] pthread_create() failed: " << std::strerror(ret) << std::endl;				
 				close(nSlaveSocket);
 			}
 		}
 	}
 }
 
-void* StartDataTrsfMasterRecvProcess(void* arg)
+void* NetworkManager::StartDataTrsfMasterRecvProcess(void* arg)
 {
 	std::cout << "[DEBUG] StartDataTrsfMasterRecvProcess" << std::endl;
-	
-	std::unique_ptr<int> socketHolder(static_cast<int*>(arg));
-	const int slaveSocket = *socketHolder;
+
+	std::unique_ptr<MasterRecvContext> context(static_cast<MasterRecvContext*>(arg));
+	const int slaveSocket = context->slaveSocket;
+	IGameControlListener* pListener = context->listener;
 
 	std::string strConfigPath;
 	strConfigPath.assign("./Resource/sysconfig.cfg");
@@ -119,8 +121,13 @@ void* StartDataTrsfMasterRecvProcess(void* arg)
 	while (true)
 	{
 		const ssize_t readLength = recv(slaveSocket, vecReadBuffer.data(), vecReadBuffer.size(), 0);
-	}
+		std::string strTestMessage = "a";
 
+		if (pListener != nullptr)
+		{
+			pListener->OnRecvControlMessage(strTestMessage);
+		}
+	}
 
 	return nullptr;
 }

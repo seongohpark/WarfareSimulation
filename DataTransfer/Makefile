@@ -15,6 +15,7 @@ BIN_DIR := Bin
 TRSFMODEL_DIR  := DataTrsfModel
 NETWORK_DIR  := NetworkManager
 COMMON_DIR  := Common
+COMMONINTERFACE_DIR  := CommonInterface
 MEMCONTROL_DIR  := SharedMemControl
 OPEN_DIS_DIR     := ThirdParty/OpenDIS
 OPEN_DIS_INC_DIR := $(OPEN_DIS_DIR)/include
@@ -35,6 +36,7 @@ INCLUDES := \
 	-I$(TRSFMODEL_DIR)/inc \
 	-I$(NETWORK_DIR)/inc \
 	-I$(COMMON_DIR)/inc \
+	-I$(COMMONINTERFACE_DIR)/inc \
 	-I$(MEMCONTROL_DIR)/inc \
 	-I$(OPEN_DIS_INC_DIR)
 
@@ -45,6 +47,7 @@ INCLUDES := \
 TRSFMODEL_SRCS  := $(wildcard $(TRSFMODEL_DIR)/src/*.cpp)
 NETWORK_SRCS  := $(wildcard $(NETWORK_DIR)/src/*.cpp)
 COMMON_SRCS  := $(wildcard $(COMMON_DIR)/src/*.cpp)
+COMMONINTERFACE_SRCS  := $(wildcard $(COMMONINTERFACE_DIR)/src/*.cpp)
 MEMCONTROL_SRCS  := $(wildcard $(MEMCONTROL_DIR)/src/*.cpp)
 
 # ============================================================
@@ -60,6 +63,9 @@ NETWORK_OBJS := \
 COMMON_OBJS := \
 	$(patsubst $(COMMON_DIR)/src/%.cpp,$(OBJ_DIR)/$(COMMON_DIR)/%.o,$(COMMON_SRCS))
 
+COMMONINTERFACE_OBJS := \
+	$(patsubst $(COMMONINTERFACE_DIR)/src/%.cpp,$(OBJ_DIR)/$(COMMONINTERFACE_DIR)/%.o,$(COMMONINTERFACE_SRCS))
+
 MEMCONTROL_OBJS := \
 	$(patsubst $(MEMCONTROL_DIR)/src/%.cpp,$(OBJ_DIR)/$(MEMCONTROL_DIR)/%.o,$(MEMCONTROL_SRCS))
 
@@ -73,12 +79,14 @@ MAIN_OBJ := $(OBJ_DIR)/main.o
 TRSFMODEL_LIB := $(OBJ_DIR)/libDataTrsfModel.a
 NETWORK_LIB := $(OBJ_DIR)/libNetworkManager.a
 COMMON_LIB := $(OBJ_DIR)/libCommon.a
+COMMONINTERFACE_LIB := $(OBJ_DIR)/libCommonInterface.a
 MEMCONTROL_LIB := $(OBJ_DIR)/libSharedMemControl.a
 
 LIBS := \
 	$(TRSFMODEL_LIB) \
 	$(NETWORK_LIB) \
 	$(COMMON_LIB) \
+	$(COMMONINTERFACE_LIB) \
 	$(MEMCONTROL_LIB)
 
 # ============================================================
@@ -114,6 +122,9 @@ $(OBJ_DIR)/$(NETWORK_DIR):
 $(OBJ_DIR)/$(COMMON_DIR):
 	mkdir -p $@
 	
+$(OBJ_DIR)/$(COMMONINTERFACE_DIR):
+	mkdir -p $@
+
 $(OBJ_DIR)/$(MEMCONTROL_DIR):
 	mkdir -p $@
 
@@ -136,6 +147,13 @@ $(OBJ_DIR)/$(NETWORK_DIR)/%.o: $(NETWORK_DIR)/src/%.cpp | $(OBJ_DIR)/$(NETWORK_D
 # ============================================================
 
 $(OBJ_DIR)/$(COMMON_DIR)/%.o: $(COMMON_DIR)/src/%.cpp | $(OBJ_DIR)/$(COMMON_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+# ============================================================
+# Compile CommonInterface
+# ============================================================
+
+$(OBJ_DIR)/$(COMMONINTERFACE_DIR)/%.o: $(COMMONINTERFACE_DIR)/src/%.cpp | $(OBJ_DIR)/$(COMMONINTERFACE_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 	
 # ============================================================
@@ -163,6 +181,9 @@ $(NETWORK_LIB): $(NETWORK_OBJS)
 	$(AR) rcs $@ $^
 
 $(COMMON_LIB): $(COMMON_OBJS)
+	$(AR) rcs $@ $^
+
+$(COMMONINTERFACE_LIB): $(COMMONINTERFACE_OBJS)
 	$(AR) rcs $@ $^
 	
 $(MEMCONTROL_LIB): $(MEMCONTROL_OBJS)

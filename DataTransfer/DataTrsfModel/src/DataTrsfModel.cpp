@@ -31,7 +31,7 @@ void DataTrsfModel::Start(const int nStartMode)
 			pSharedMemControl->StartSharedMemProcess();
 			
 			pNetworkManager = std::make_unique<NetworkManager>();
-			pNetworkManager->StartMasterServer();
+			pNetworkManager->StartMasterServer(this);
 		}
 		break;
 
@@ -45,5 +45,9 @@ void DataTrsfModel::Start(const int nStartMode)
 
 void DataTrsfModel::StartIPC(void)
 {
+}
 
+void DataTrsfModel::OnRecvControlMessage(std::string recvMessage)
+{
+	pSharedMemControl->SendSharedMemMessage(recvMessage);
 }

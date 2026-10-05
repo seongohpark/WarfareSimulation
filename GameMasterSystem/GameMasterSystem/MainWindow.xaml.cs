@@ -41,8 +41,24 @@ namespace GameMasterSystem
 
         private async void ConnectServerButton_Click(object sender, RoutedEventArgs e)
         {
-            const string serverIp = "127.0.0.1";
-            const int serverPort = 3001;
+            string serverAddress = TextBoxServerAddr.Text.Trim();
+            string[] parts = serverAddress.Split(':');
+
+            if (parts.Length != 2)
+            {
+                MessageBox.Show("서버 주소를 IP:PORT 형식으로 입력해주세요.");
+                return;
+            }
+
+            string serverIp = parts[0];
+            if (!int.TryParse(parts[1], out int serverPort))
+            {
+                MessageBox.Show("Port 번호가 올바르지 않습니다.");
+                return;
+            }
+
+            Debug.WriteLine($"Server IP   : {serverIp}");
+            Debug.WriteLine($"Server Port : {serverPort}");
 
             await networkManager.ConnectAsync(serverIp, serverPort);
         }

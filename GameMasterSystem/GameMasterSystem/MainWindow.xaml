@@ -7,10 +7,18 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <GroupBox x:Name ="SimulationInfo" Header="모의정보" Margin="10,10,300,309"/>
         <Button x:Name ="GameStartButton" Content="Game Start" HorizontalAlignment="Right" VerticalAlignment="Top" Width =" 100" Height ="20"  Margin="0,20,10,0" Click="GameStartButton_Click"/>
         <Button x:Name ="GameEndButton" Content="Game End" HorizontalAlignment="Right" VerticalAlignment="Top" Width =" 100" Height ="20"  Margin="0,50,10,0" Click="GameEndButton_Click"/>
-        <Label x:Name ="SimTimeLabel" Content="Simulation Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,20,0,0"/>
-        <Label x:Name ="SysTimeLabel" Content="System Time" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,50,0,0"/>
-        <Button x:Name ="ConnectServerButton" Content="연결" HorizontalAlignment="Left" Margin="10,404,0,0" VerticalAlignment="Top" Width="100" Click="ConnectServerButton_Click"/>
+        <TextBlock x:Name ="TextBlockSimTime" HorizontalAlignment="Left" Margin="159,47,0,0" TextWrapping="Wrap" Text="0000-00-00 00:00:00" VerticalAlignment="Top" Width="150" Height ="20"/>
+        <TextBlock x:Name ="TextBlockServerTime" HorizontalAlignment="Left" Margin="159,82,0,0" TextWrapping="Wrap" Text="0000-00-00 00:00:00" VerticalAlignment="Top" Width="150" Height ="20"/>
+        <Label x:Name ="SimTimeLabel" Content="시뮬레이션 시간 : " HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Width ="120" Height ="30" Margin="10,40,0,0" RenderTransformOrigin="0.577,1.521"/>
+        <Label x:Name ="SysTimeLabel" Content="서버 시간 : " HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Width =" 100" Height ="30" Margin="10,77,0,0"/>
+        <Grid Margin="0,145,300,200">
+            <GroupBox x:Name ="ServerInfo" Header="서버정보" Margin="10,0,0,0"/>
+            <Label Content="IP Address:Port" HorizontalAlignment="Left" VerticalAlignment="Center" Margin ="10, 0, 0, 0" Width ="120" Height="30"/>
+            <TextBox x:Name ="TextBoxServerAddr" Text ="192.168.17.133:9000" VerticalAlignment="Center" Width ="160" Height="25"/>
+            <Button x:Name ="ConnectServerButton" Content="연결"  Margin="350,0,0,0" VerticalAlignment="Center" Width="100" Click="ConnectServerButton_Click"/>
+        </Grid>
     </Grid>
 </Window>

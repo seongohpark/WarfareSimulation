@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static GameMasterSystem.PacketManager;
 
 namespace GameMasterSystem
 {
@@ -22,16 +23,19 @@ namespace GameMasterSystem
     public partial class MainWindow : Window
     {
         private readonly NetworkManager networkManager;
+        private PacketManager packetManager;
 
         public MainWindow()
         {
             InitializeComponent();
             networkManager = new NetworkManager();
+            packetManager = new PacketManager();            
         }
 
         public void GameStartButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Game Start Button Click");
+            string simStartPacket = packetManager.CreateControlPacket(ControlPacketType.START);
         }
 
         public void GameEndButton_Click(object sender, RoutedEventArgs e)
